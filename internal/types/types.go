@@ -51,6 +51,9 @@ type ServerConfig struct {
 	WriteTimeout            int    `json:"write_timeout"`
 	IdleTimeout             int    `json:"idle_timeout"`
 	GracefulShutdownTimeout int    `json:"graceful_shutdown_timeout"`
+	EnableTLS               bool   `json:"enable_tls"`
+	CertFile                string `json:"cert_file"`
+	KeyFile                 string `json:"key_file"`
 }
 
 // AuthConfig represents authentication configuration

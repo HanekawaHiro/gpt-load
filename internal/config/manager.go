@@ -77,6 +77,9 @@ func (m *Manager) ReloadConfig() error {
 			WriteTimeout:            utils.ParseInteger(os.Getenv("SERVER_WRITE_TIMEOUT"), 600),
 			IdleTimeout:             utils.ParseInteger(os.Getenv("SERVER_IDLE_TIMEOUT"), 120),
 			GracefulShutdownTimeout: utils.ParseInteger(os.Getenv("SERVER_GRACEFUL_SHUTDOWN_TIMEOUT"), 10),
+			EnableTLS:               utils.ParseBoolean(os.Getenv("ENABLE_TLS"), false),
+			CertFile:                utils.GetEnvOrDefault("CERT_FILE", ""),
+			KeyFile:                 utils.GetEnvOrDefault("KEY_FILE", ""),
 		},
 		Auth: types.AuthConfig{
 			Key: os.Getenv("AUTH_KEY"),
@@ -176,6 +179,16 @@ func (m *Manager) Validate() error {
 		m.config.Server.GracefulShutdownTimeout = 10
 	}
 
+	// Validate TLS config
+	if m.config.Server.EnableTLS {
+		if m.config.Server.CertFile == "" {
+			validationErrors = append(validationErrors, "CERT_FILE is required when TLS is enabled")
+		}
+		if m.config.Server.KeyFile == "" {
+			validationErrors = append(validationErrors, "KEY_FILE is required when TLS is enabled")
+		}
+	}
+
 	if len(validationErrors) > 0 {
 		logrus.Error("Configuration validation failed:")
 		for _, err := range validationErrors {
@@ -203,6 +216,11 @@ func (m *Manager) DisplayServerConfig() {
 	logrus.Infof("    Read Timeout: %d seconds", serverConfig.ReadTimeout)
 	logrus.Infof("    Write Timeout: %d seconds", serverConfig.WriteTimeout)
 	logrus.Infof("    Idle Timeout: %d seconds", serverConfig.IdleTimeout)
+	logrus.Infof("    TLS Enabled: %t", serverConfig.EnableTLS)
+	if serverConfig.EnableTLS {
+		logrus.Infof("    Cert File: %s", serverConfig.CertFile)
+		logrus.Infof("    Key File: %s", serverConfig.KeyFile)
+	}
 
 	logrus.Info("  --- Performance ---")
 	logrus.Infof("    Max Concurrent Requests: %d", perfConfig.MaxConcurrentRequests)

@@ -135,9 +135,21 @@ func (a *App) Start() error {
 	// Start HTTP server in a new goroutine
 	go func() {
 		logrus.Infof("GPT-Load proxy server started successfully on Version: %s", version.Version)
-		logrus.Infof("Server address: http://%s:%d", serverConfig.Host, serverConfig.Port)
+		protocol := "http"
+		if serverConfig.EnableTLS {
+			protocol = "https"
+		}
+		logrus.Infof("Server address: %s://%s:%d", protocol, serverConfig.Host, serverConfig.Port)
 		logrus.Info("")
-		if err := a.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+
+		var err error
+		if serverConfig.EnableTLS {
+			err = a.httpServer.ListenAndServeTLS(serverConfig.CertFile, serverConfig.KeyFile)
+		} else {
+			err = a.httpServer.ListenAndServe()
+		}
+
+		if err != nil && err != http.ErrServerClosed {
 			logrus.Fatalf("Server startup failed: %v", err)
 		}
 	}()
