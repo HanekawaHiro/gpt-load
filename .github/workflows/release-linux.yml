@@ -36,13 +36,10 @@ jobs:
         run: |
           CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags "-s -w -X gpt-load/internal/version.Version=${{ github.ref_name }}" -o gpt-load-linux-arm64
       - name: Release
-        uses: softprops/action-gh-release@v1
+        uses: ncipollo/release-action@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: |
-            gpt-load-linux-amd64
-            gpt-load-linux-arm64
-          draft: true
-          generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: "gpt-load-linux-amd64,gpt-load-linux-arm64"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          generateReleaseNotes: true
+          allowUpdates: true
